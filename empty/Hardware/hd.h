@@ -3,18 +3,8 @@
 
 #include "ti_msp_dl_config.h"
 
-// /* ---------- 四路巡线传感器信号 ---------- */
-// #define HD1_PORT  GPIOA
-// #define HD1_PIN   DL_GPIO_PIN_27
-// #define HD2_PORT  GPIOA
-// #define HD2_PIN   DL_GPIO_PIN_12
-// #define HD3_PORT  GPIOB
-// #define HD3_PIN   DL_GPIO_PIN_16
-// #define HD4_PORT  GPIOB
-// #define HD4_PIN   DL_GPIO_PIN_17
-
 /* ---------- 全局传感器数据 ---------- */
-extern uint8_t HD[4];     // HD[0] = 左端, HD[3] = 右端
+extern uint8_t HD[8];     // HD[0] = 左端, HD[3] = 右端
 
 /* ---------- 函数声明 ---------- */
 void HD_Read(void);       // 读取四路传感器状态
