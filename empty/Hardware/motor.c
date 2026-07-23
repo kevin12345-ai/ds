@@ -50,7 +50,7 @@ void Motor_SetLeftSpeed(int speed) {
     }
 
     // 设置 PWM 占空比（period=100，speed 直接对应百分比）
-    DL_Timer_setCaptureCompareValue(PWM_TIMER, speed, LEFT_PWM_CH);
+    DL_Timer_setCaptureCompareValue(PWM_TIMER, 100 - speed, LEFT_PWM_CH);
 }
 
 /* ---------- 右电机速度控制 ---------- */
@@ -70,7 +70,7 @@ void Motor_SetRightSpeed(int speed) {
         DL_GPIO_setPins(RIGHT_IN2_PORT, RIGHT_IN2_PIN);
     }
 
-    DL_Timer_setCaptureCompareValue(PWM_TIMER, speed, RIGHT_PWM_CH);
+    DL_Timer_setCaptureCompareValue(PWM_TIMER, 100 - speed, RIGHT_PWM_CH);
 }
 
 /* ---------- 两电机同时控制 ---------- */

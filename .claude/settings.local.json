@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git init *)"
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(curl -s -X PATCH -H \"Accept: application/vnd.github+json\" https://api.github.com/repos/kevin12345-ai/ds -d '{\"description\":\"电赛控制类 - MSPM0G3507 智能车代码\"}')",
+      "Bash(git commit *)"
     ]
   }
 }

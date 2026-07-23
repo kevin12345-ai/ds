@@ -37,6 +37,10 @@ extern float angle_Kd;
 extern SpeedPID left_spid, right_spid;
 extern LinePID line_pid;
 
+/* 供主循环 OLED 显示的变量 */
+extern volatile float disp_TargetA;
+extern volatile float disp_TargetB;
+
 void SpeedPID_Init(SpeedPID *pid, float kp, float ki, float kd);
 int16_t SpeedPID_Compute(SpeedPID *pid, int16_t target, int16_t current, float dt);
 

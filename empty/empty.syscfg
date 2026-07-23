@@ -25,6 +25,7 @@ const PWM1   = PWM.addInstance();
 const SYSCTL = scripting.addModule("/ti/driverlib/SYSCTL");
 const TIMER  = scripting.addModule("/ti/driverlib/TIMER", {}, false);
 const TIMER1 = TIMER.addInstance();
+const TIMER2 = TIMER.addInstance();
 
 /**
  * Write custom configuration values to the imported modules.
@@ -169,6 +170,15 @@ TIMER1.timerClkPrescale   = 40;
 TIMER1.timerClkDiv        = 8;
 TIMER1.timerMode          = "PERIODIC";
 TIMER1.peripheral.$assign = "TIMA0";
+
+TIMER2.$name              = "PID";
+TIMER2.timerClkPrescale   = 16;
+TIMER2.timerPeriod        = "5 ms";
+TIMER2.timerMode          = "PERIODIC";
+TIMER2.timerStartTimer    = true;
+TIMER2.interrupts         = ["ZERO"];
+TIMER2.timerClkDiv        = 8;
+TIMER2.peripheral.$assign = "TIMA1";
 
 /**
  * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future

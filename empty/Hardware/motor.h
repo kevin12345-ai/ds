@@ -3,7 +3,7 @@
 
 #include "stdlib.h"
 #include "ti_msp_dl_config.h"
-#include <ti/driverlib/dl_timer.h>   // Ã·π© DL_Timer_setCaptureCompareValue
+#include <ti/driverlib/dl_timer.h>   
 
 void Motor_Init(void);
 void Motor_SetLeftSpeed(int speed);
