@@ -13,7 +13,7 @@
 #define YAW_OUT_MAX 5.0f
 
 #define Kp1 1.9f
-#define Ki1 0.0f
+#define Ki1 0.15f
 #define Kd1 0.0f
 
 #define Kp3 0.5f
@@ -38,7 +38,7 @@ void LinePID_Init(LinePID *pid, float kp, float ki, float kd) {
   pid->last_error = 0.0f;
 }
 
-/* ========== 速度内环 PID (PI) ========== */
+/* ========== 速度内环 PID (PID) ========== */
 void SpeedPID_Init(SpeedPID *pid, float kp, float ki, float kd) {
   pid->Kp = kp;
   pid->Ki = ki;
@@ -69,6 +69,15 @@ int16_t SpeedPID_Compute(SpeedPID *pid, int16_t target, int16_t current,
   return (int16_t)output;
 }
 
+float PWM_Limit(float IN, float max, float min) {
+  float OUT = IN;
+  if (OUT > max)
+    OUT = max;
+  if (OUT < min)
+    OUT = min;
+  return OUT;
+}
+
 float PID_A(float target) {
 
   static float Bias, Last_bias, Last2_bias, Pwm;
@@ -77,6 +86,10 @@ float PID_A(float target) {
          Kd1 * (Bias - 2 * Last_bias + Last2_bias);
   Last2_bias = Last_bias;
   Last_bias = Bias;
+
+  /* 输出限幅：增量式PID天然抗饱和，钳位Pwm即可防止飞车 */
+  Pwm = PWM_Limit(Pwm, MOTOR_DUTY_MAX, MOTOR_DUTY_MIN);
+
   return Pwm;
 }
 
@@ -88,17 +101,14 @@ float PID_B(float target) {
          Kd1 * (Bias - 2 * Last_bias + Last2_bias);
   Last2_bias = Last_bias;
   Last_bias = Bias;
+
+  /* 输出限幅 */
+  Pwm = PWM_Limit(Pwm, MOTOR_DUTY_MAX, MOTOR_DUTY_MIN);
+
   return Pwm;
 }
 
-float PWM_Limit(float IN, float max, float min) {
-  float OUT = IN;
-  if (OUT > max)
-    OUT = max;
-  if (OUT < min)
-    OUT = min;
-  return OUT;
-}
+
 
 void YawPID_Control(float target, float current_angle, int16_t base_speed,
                     float gyroZ) {
@@ -159,10 +169,21 @@ void Control(void) {
   HD_DIF();
 }
 
-// void Control_Angle(void)
-// {
+/* ========== 速度内环：增量式PID → 电机PWM ========== */
+void SpeedControl_Run(int16_t target_l, int16_t target_r) {
+  /* 更新 OLED 显示的目标速度 */
+  disp_TargetA = target_l;
+  disp_TargetB = target_r;
 
-// }
+  /* 增量式PID计算（反馈为编码器脉冲/10ms） */
+  int16_t pwm_l = (int16_t)PID_A(target_l);
+  int16_t pwm_r = (int16_t)PID_B(target_r);
+
+  /* 驱动电机 */
+  Motor_SetSpeed(pwm_l, pwm_r);
+}
+
+
 
 /* 全局变量（在 main.c 中定义，此处 extern 声明确保链接正确） */
 extern float yaw_angle;                // 当前偏航角(度)

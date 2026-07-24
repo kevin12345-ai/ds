@@ -43,15 +43,22 @@ int main(void) {
       NVIC_EnableIRQ(PID_INST_INT_IRQN);
 
       /* === 所有 OLED 显示集中在此，ISR 中不写 OLED === */
+      // HD_Show();
+      
       sprintf(buf, "Yaw:%.1f", yaw_angle);
       OLED_ShowString(1, 0, buf);
 
-      HD_Show();
 
       sprintf(buf, "TA:%.1f", disp_TargetA);
       OLED_ShowString(2, 0, buf);
       sprintf(buf, "TB:%.1f", disp_TargetB);
       OLED_ShowString(3, 0, buf);
+
+      /* 实际编码器速度，调速度环时对比 TA vs LS, TB vs RS */
+      sprintf(buf, "LS:%d", left_sp);
+      OLED_ShowString(2, 8, buf);
+      sprintf(buf, "RS:%d", right_sp);
+      OLED_ShowString(3, 8, buf);
     }
   }
 }
@@ -63,19 +70,17 @@ void TIMA0_IRQHandler(void) {
 
     left_sp = Encoder_GetLeftSpeed();
     right_sp = Encoder_GetRightSpeed();
-    DL_GPIO_togglePins(LED_PORT, LED_LED1_PIN);
+    // DL_GPIO_togglePins(LED_PORT, LED_LED1_PIN);
 
-    // sprintf(buf, "LEFT:%d", left_sp);
-    // OLED_ShowString(2, 1, buf);
-    // sprintf(buf, "RIGHT:%d", right_sp);
-    // OLED_ShowString(3, 1, buf);
   }
 }
 
 void TIMA1_IRQHandler(void) {
   if (DL_TimerA_getPendingInterrupt(PID_INST) & DL_TIMER_IIDX_ZERO) {
     DL_TimerA_clearInterruptStatus(PID_INST, DL_TIMERA_INTERRUPT_ZERO_EVENT);
-    Control(); /* 只控电机，不写 OLED */
+    // Control(); /* 只控电机，不写 OLED */
+    // SpeedControl_Run(4, 0);
+    Motor_SetSpeed(0, 5);
     // YawPID_Control(0, yaw_angle, 30, gyro_z_cached); /* 用缓存值，不碰 I2C */
   }
 }

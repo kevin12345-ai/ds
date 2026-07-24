@@ -2,17 +2,17 @@
 #include "ti_msp_dl_config.h"
 
 // ---------- 引脚定义（使用 SysConfig 生成的宏） ----------
-// 左编码器 (TIMG8: PA26=ENC_A, PA27=ENC_B)
-#define LEFT_A_PORT   ENC_LEFT_A_PORT           // GPIOA
-#define LEFT_A_PIN    ENC_LEFT_A_PIN_0_PIN      // DL_GPIO_PIN_26 (PA26)
-#define LEFT_B_PORT   ENC_LEFT_B_PORT           // GPIOA
-#define LEFT_B_PIN    ENC_LEFT_B_PIN_2_PIN      // DL_GPIO_PIN_27 (PA27)
+// 左编码器 → 物理右编码器 (TIMG12: PA25=ENC_A, PA14=ENC_B)
+#define LEFT_A_PORT   ENC_RIGHT_A_PORT          // GPIOA
+#define LEFT_A_PIN    ENC_RIGHT_A_PIN_1_PIN     // DL_GPIO_PIN_25 (PA25)
+#define LEFT_B_PORT   ENC_RIGHT_B_PORT          // GPIOA
+#define LEFT_B_PIN    ENC_RIGHT_B_PIN_3_PIN     // DL_GPIO_PIN_14 (PA14)
 
-// 右编码器 (TIMG12: PA25=ENC_A, PA14=ENC_B)
-#define RIGHT_A_PORT  ENC_RIGHT_A_PORT          // GPIOA
-#define RIGHT_A_PIN   ENC_RIGHT_A_PIN_1_PIN     // DL_GPIO_PIN_25 (PA25)
-#define RIGHT_B_PORT  ENC_RIGHT_B_PORT          // GPIOA
-#define RIGHT_B_PIN   ENC_RIGHT_B_PIN_3_PIN     // DL_GPIO_PIN_14 (PA14)
+// 右编码器 → 物理左编码器 (TIMG8: PA26=ENC_A, PA27=ENC_B)
+#define RIGHT_A_PORT  ENC_LEFT_A_PORT           // GPIOA
+#define RIGHT_A_PIN   ENC_LEFT_A_PIN_0_PIN      // DL_GPIO_PIN_26 (PA26)
+#define RIGHT_B_PORT  ENC_LEFT_B_PORT           // GPIOA
+#define RIGHT_B_PIN   ENC_LEFT_B_PIN_2_PIN      // DL_GPIO_PIN_27 (PA27)
 
 // ---------- 全局变量（编码器脉冲计数，volatile） ----------
 volatile int32_t left_pulse = 0;

@@ -47,6 +47,7 @@ int16_t SpeedPID_Compute(SpeedPID *pid, int16_t target, int16_t current, float d
 // void YawPID_Control(float target, int16_t base_speed, float gyroZ);
 void YawPID_Control(float target, float current_angle, int16_t base_speed, float gyroZ);
 void Control(void);
+void SpeedControl_Run(int16_t target_l, int16_t target_r);
 void Line_PID(uint8_t base_speed);
 
 
