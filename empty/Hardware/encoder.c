@@ -33,9 +33,9 @@ void GROUP1_IRQHandler(void) {
 
 
         if (!DL_GPIO_readPins(LEFT_B_PORT, LEFT_B_PIN)) {
-            left_pulse++;
-        } else {
             left_pulse--;
+        } else {
+            left_pulse++;
         }
 
         // 翻转 LED（可选）
@@ -48,9 +48,9 @@ void GROUP1_IRQHandler(void) {
 
 
         if (!DL_GPIO_readPins(RIGHT_B_PORT, RIGHT_B_PIN)) {
-            right_pulse--;
-        } else {
             right_pulse++;
+        } else {
+            right_pulse--;
         }
 
         // DL_GPIO_togglePins(LED_PORT, LED_LED_USER_PIN);

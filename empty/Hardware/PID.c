@@ -10,11 +10,19 @@
 /* ========== 宏定义 ========== */
 #define MOTOR_DUTY_MAX 40
 #define MOTOR_DUTY_MIN -40
-#define YAW_OUT_MAX 5.0f
 
-#define Kp1 1.9f
-#define Ki1 0.15f
+/* 速度内环参数 */
+#define Kp1 1.0f
+#define Ki1 0.03f
 #define Kd1 0.0f
+
+/* 角度外环参数 */
+#define YAW_KP      0.95f   /* 角度误差→差速脉冲  (每度)     */
+#define YAW_KI      0.15f   /* 角度积分（消除低频摆动）        */
+#define YAW_KD      0.4f   /* 陀螺仪阻尼                     */
+#define YAW_OUT_MAX 6.0f   /* 差速脉冲最大值                  */
+#define SPD_TGT_MAX 30     /* 目标速度上限 (脉冲/10ms)        */
+#define SPD_TGT_MIN 0      /* 目标速度下限                    */
 
 #define Kp3 0.5f
 #define Ki3 0.0f
@@ -110,41 +118,42 @@ float PID_B(float target) {
 
 
 
+/* ========== 角度外环：角度→差速→速度内环→电机 ========== */
 void YawPID_Control(float target, float current_angle, int16_t base_speed,
                     float gyroZ) {
   /* 1. 计算角度误差（NormalizeAngle 处理 [-180,180] 穿越问题） */
   float error = NormalizeAngle(target - current_angle);
 
-  /* 2. PD 计算 */
-  float Kp = 5.0f; /* 降至 1.0，线性区扩大到 ±5° */
-  float Kd = 0.0f;
-  float out = Kp * error - Kd * gyroZ;
+  /* 2. 角度积分（限幅 ±5 脉冲，防止饱和） */
+  static float yaw_integral = 0;
+  yaw_integral += error * 0.01f;
+  if (yaw_integral > 5.0f)  yaw_integral = 5.0f;
+  if (yaw_integral < -5.0f) yaw_integral = -5.0f;
 
-  /* 3. 死区：误差和角速度都小时彻底关闭输出，避免静态抖动 */
-  if (fabsf(error) < 1.5f && fabsf(gyroZ) < 2.0f) {
+  /* 3. PID 计算：角度误差 → 差速脉冲，陀螺仪做阻尼 */
+  float out = YAW_KP * error + YAW_KI * yaw_integral - YAW_KD * gyroZ;
+
+  /* 4. 死区：误差和角速度都小时关闭差速（积分保留，避免边界穿越） */
+  if (fabsf(error) < 1.5f && fabsf(gyroZ) < 5.0f) {
     out = 0.0f;
   }
 
-  /* 4. 输出限幅 */
-  if (out > YAW_OUT_MAX)
-    out = YAW_OUT_MAX;
-  if (out < -YAW_OUT_MAX)
-    out = -YAW_OUT_MAX;
+  /* 5. 差速限幅（脉冲/10ms） */
+  if (out > YAW_OUT_MAX)  out = YAW_OUT_MAX;
+  if (out < -YAW_OUT_MAX) out = -YAW_OUT_MAX;
 
-  /* 5. 合成左右轮速度（差速驱动），四舍五入保留精度 */
-  int16_t tgt_l = base_speed + (int16_t)(out + (out > 0 ? 0.5f : -0.5f));
-  int16_t tgt_r = base_speed - (int16_t)(out + (out > 0 ? 0.5f : -0.5f));
+  /* 6. 合成左右目标速度（脉冲/10ms），四舍五入 */
+  int16_t tgt_l = base_speed - (int16_t)(out + (out > 0 ? 0.5f : -0.5f));
+  int16_t tgt_r = base_speed + (int16_t)(out + (out > 0 ? 0.5f : -0.5f));
 
-  /* 6. 最终占空比限幅 */
-  tgt_l = (tgt_l > MOTOR_DUTY_MAX)
-              ? MOTOR_DUTY_MAX
-              : ((tgt_l < MOTOR_DUTY_MIN) ? MOTOR_DUTY_MIN : tgt_l);
-  tgt_r = (tgt_r > MOTOR_DUTY_MAX)
-              ? MOTOR_DUTY_MAX
-              : ((tgt_r < MOTOR_DUTY_MIN) ? MOTOR_DUTY_MIN : tgt_r);
+  /* 7. 目标速度限幅 */
+  if (tgt_l > SPD_TGT_MAX) tgt_l = SPD_TGT_MAX;
+  if (tgt_l < SPD_TGT_MIN) tgt_l = SPD_TGT_MIN;
+  if (tgt_r > SPD_TGT_MAX) tgt_r = SPD_TGT_MAX;
+  if (tgt_r < SPD_TGT_MIN) tgt_r = SPD_TGT_MIN;
 
-  Motor_SetLeftSpeed(tgt_l);
-  Motor_SetRightSpeed(tgt_r);
+  /* 8. 速度内环执行 */
+  SpeedControl_Run(tgt_l, tgt_r);
 }
 
 /*

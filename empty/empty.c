@@ -9,6 +9,7 @@
 
 volatile uint8_t flag_10ms = 0;
 volatile float gyro_z_cached = 0;  /* 主循环更新，ISR 使用，避免 I2C 冲突 */
+volatile float yaw_target = 0;     /* 上电时锁定朝向，防止启动猛偏 */
 
 int main(void) {
   SYSCFG_DL_init();
@@ -25,6 +26,9 @@ int main(void) {
 
   /* 先静止计算陀螺仪零漂，此时 PID 定时器未开，电机不会转 */
   Gyro_Calibrate();
+
+  /* 上电时锁定当前朝向为目标角度 */
+  yaw_target = yaw_angle;
 
   /* 零漂校准完成后再启动 PID 控制 */
   DL_TimerA_startCounter(PID_INST);
@@ -78,9 +82,9 @@ void TIMA0_IRQHandler(void) {
 void TIMA1_IRQHandler(void) {
   if (DL_TimerA_getPendingInterrupt(PID_INST) & DL_TIMER_IIDX_ZERO) {
     DL_TimerA_clearInterruptStatus(PID_INST, DL_TIMERA_INTERRUPT_ZERO_EVENT);
-    // Control(); /* 只控电机，不写 OLED */
-    // SpeedControl_Run(4, 0);
-    Motor_SetSpeed(0, 5);
-    // YawPID_Control(0, yaw_angle, 30, gyro_z_cached); /* 用缓存值，不碰 I2C */
+    Control(); /* 只控电机，不写 OLED */
+    // SpeedControl_Run(8, 8);
+    // Motor_SetSpeed(0, 5);
+    // YawPID_Control(yaw_target, yaw_angle, 10, gyro_z_cached); /* base=10, 确保差速时两侧都不停转 */
   }
 }
