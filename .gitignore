@@ -1,0 +1,29 @@
+# IDE / Editor
+.vscode/
+.idea/
+.theia/
+*.swp
+*.swo
+*~
+
+# Build output
+Debug/
+Release/
+*.o
+*.obj
+*.d
+*.elf
+*.out
+*.hex
+*.bin
+*.map
+*.mk
+
+# Clangd cache
+.clangd/
+.claude/
+
+# OS
+Thumbs.db
+.DS_Store
+Desktop.ini
